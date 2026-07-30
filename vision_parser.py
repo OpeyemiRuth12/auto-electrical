@@ -1,11 +1,12 @@
 import base64
+import json
 import streamlit as st
 from anthropic import Anthropic
 
 def parse_floorplan_with_claude(uploaded_file):
     """
     Parse a floorplan image using Claude Vision.
-    Returns extracted room data or an error message.
+    Returns extracted room data as a Python list/dict or an error message.
     """
 
     # Initialize Anthropic client with your API key from secrets.toml
@@ -45,10 +46,31 @@ def parse_floorplan_with_claude(uploaded_file):
             ]
         )
 
-        # Return Claude's text output
-        return response.content[0].text
+        # Get Claude's text output
+        result_text = response.content[0].text
+
+        # Try to parse JSON output
+        try:
+            room_data = json.loads(result_text)
+            return room_data
+        except json.JSONDecodeError:
+            # If Claude returns plain text instead of JSON
+            return {"error": "Claude response not valid JSON", "raw": result_text}
 
     except Exception as e:
         # Fallback if Claude Vision fails
         return {"error": f"Claude Vision unavailable: {str(e)}"}
+
+
+def show_rooms(room_data):
+    """
+    Display extracted room data neatly in Streamlit.
+    """
+    if isinstance(room_data, list):
+        st.subheader("Extracted Room Data")
+        st.table(room_data)  # Shows Room | Area_m2 neatly
+    else:
+        st.error("Could not parse room data")
+        st.write(room_data)
+
 

@@ -36,6 +36,62 @@ from vision_parser import parse_floorplan_with_claude
 
 st.set_page_config(page_title="AutoElect", page_icon="⚡", layout="centered")
 
+# ---------------------------------------------------------------------
+# Light / Dark mode toggle
+# ---------------------------------------------------------------------
+# .streamlit/config.toml is only read once when the app starts, so it
+# can't switch themes at runtime. Instead, both palettes are defined
+# here and applied as injected CSS based on the toggle below - this is
+# what actually makes the switch happen live, with no restart needed.
+#
+# Defaults to Light mode (white background) per supervisor's request.
+# Dark mode (the original navy/gold theme) remains available as a
+# user choice via the toggle.
+
+dark_mode = st.toggle("🌙 Dark Mode", value=False)
+
+if dark_mode:
+    bg, secondary_bg, text, primary, primary_text = "#0B1120", "#152238", "#F2F2ED", "#D4AF37", "#0B1120"
+else:
+    bg, secondary_bg, text, primary, primary_text = "#FFFFFF", "#F5F1E6", "#0B1120", "#0B1120", "#FFFFFF"
+
+st.markdown(f"""
+<style>
+.stApp {{
+    background-color: {bg};
+    color: {text};
+}}
+[data-testid="stHeader"] {{
+    background-color: {bg};
+}}
+[data-testid="stSidebar"] {{
+    background-color: {secondary_bg};
+}}
+h1, h2, h3, h4, h5, h6, p, label, span, .stMarkdown, .stCaption {{
+    color: {text} !important;
+}}
+.stTabs [data-baseweb="tab"] {{
+    color: {text};
+}}
+.stTabs [aria-selected="true"] {{
+    color: {primary} !important;
+    border-bottom-color: {primary} !important;
+}}
+.stButton > button, .stDownloadButton > button {{
+    background-color: {primary};
+    color: {primary_text};
+    border: 1px solid {primary};
+}}
+[data-testid="stMetricValue"] {{
+    color: {primary} !important;
+}}
+[data-testid="stExpander"] {{
+    background-color: {secondary_bg};
+    border-radius: 6px;
+}}
+</style>
+""", unsafe_allow_html=True)
+
 LIGHTING_FITTING_NAMES = set(FITTING_DATA.keys())
 
 CATEGORY_LABELS = {
